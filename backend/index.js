@@ -32,7 +32,6 @@ let contacts = [
     number: '39-23-6423122',
   },
 ];
-
 app.get('/api/persons', (req, res) => {
   try {
     res.json(contacts);
