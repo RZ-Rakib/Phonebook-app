@@ -8,7 +8,7 @@ GET http://localhost:10001/info
 GET http://localhost:10001/api/persons/4
 
 ### delete a person by id
-DELETE http://localhost:10001/api/persons/4
+DELETE http://localhost:10001/api/persons/691713cc7c4ccc6b01ff6ddf
 
 ### create a new person
 POST http://localhost:10001/api/persons

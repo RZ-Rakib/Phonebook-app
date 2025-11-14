@@ -8,8 +8,8 @@ require('dotenv').config()
 const app = express();
 
 // middlewares
+app.use(express.static('dist'));
 app.use(express.json());
-
 app.use(morgan('dev'));
 
 app.get('/api/persons', (req, res) => {
@@ -69,22 +69,21 @@ app.get('/info', (req, res) => {
   });
   
   app.delete('/api/persons/:id', (req, res) => {
-    try {
       const id = req.params.id;
       if (!id) {
         winston.warn(`'DELETE' api/persons/:id - ID is missing`);
         return res.status(400).json({ error: 'ID missing' });
       }
       
-      contacts = contacts.filter((n) => n.id !== id);
-      res.status(204).end();
-      winston.info(`'DELETE' api/persons/:id - person with ID ${id} deleted`);
-    } catch (error) {
-      res.status(500).end();
-      winston.error(
-        `'DELETE' api/persons/:id - Error deleting person with ID ${id} from server', ${error.message}`
-      );
-    }
+      Person.findByIdAndDelete(id)
+        .then(person => {
+          res.status(204).end();
+          winston.info(`'DELETE' api/persons/:id - person with ID ${id} deleted`);
+        })
+        .catch(error => {
+          res.status(500).json({error: 'malformed id'});
+          winston.error(`'DELETE' api/persons/:id - Error deleting person with ID ${id} from server', ${error.message}`);
+        })
   });
   
   app.post('/api/persons', (req, res) => {
@@ -120,7 +119,6 @@ app.get('/info', (req, res) => {
         })
   });
 
-  app.use(express.static('dist'));
   
   const PORT = process.env.PORT
   app.listen(PORT, () => {
