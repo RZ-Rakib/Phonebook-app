@@ -12,38 +12,34 @@ app.use(express.static('dist'));
 app.use(express.json());
 app.use(morgan('dev'));
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   Person
   .find({})
   .then( result => {
     res.json(result);
   })
-  .catch(error => {
-    winston.error(
-      `'GET api/persons' - Failed to fetch data from server, ${error.message}`
-    );
-    res.status(500).end();
-  })
+  .catch(error => next(error))
 });
 
-app.get('/info', (req, res) => {
-  try {
-    const countPersons = contacts.length;
-    const date = new Date();
-    
-    res.send(`
-      <p>Phonebook has info for ${countPersons} people</p>
-      <p>${date}</P>
+app.get('/info', (req, res, next) => {
+  Person
+    .countDocuments({})
+    .then(count => {
+      const date = new Date();
+
+      res.send(`
+        <p>Phonebook has info for ${count} people</p>
+        <p>${date}</p>
       `);
-      winston.info(`'GET /info' fetched info sucessfully`);
-    } catch (error) {
-      winston.error(
-        `'GET /info' Failed to fetch data from server, ${error.message}`
-      );
-      res.status(500).end();
-    }
-    mongoose.connection.close()
-  });
+
+      winston.info(`'GET /info' fetched info successfully`);
+    })
+    .catch(error => {
+      winston.error(`'GET /info' Failed to fetch info, ${error.message}`);
+      next(error);
+    });
+});
+
   
   app.get('/api/persons/:id', (req, res) => {
     try {
@@ -80,10 +76,7 @@ app.get('/info', (req, res) => {
           res.status(204).end();
           winston.info(`'DELETE' api/persons/:id - person with ID ${id} deleted`);
         })
-        .catch(error => {
-          res.status(500).json({error: 'malformed id'});
-          winston.error(`'DELETE' api/persons/:id - Error deleting person with ID ${id} from server', ${error.message}`);
-        })
+        .catch(error => next(error))
   });
   
   app.post('/api/persons', (req, res) => {
@@ -113,12 +106,26 @@ app.get('/info', (req, res) => {
             res.status(201).json(savedPerson);
           }
         })
-        .catch(error => {
-          winston.error(`'POST' api/persons - Failed to add name:${name} to server, ${error.message}`)
-          res.status(500).end();
-        })
-  });
+        .catch(error => next(error))
+  })
 
+  const unknownEndPoint = (req,res) => {
+    winston.warn(`Unknown endpoint`)
+    res.status(404).json({error: 'Unknown endpoint'})
+  }
+  app.use(unknownEndPoint)
+
+  const errorHandler = (error, request, response, next) => {
+  winston.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+}
+
+// this has to be the last loaded middleware, also all the routes should be registered before this!
+app.use(errorHandler)
   
   const PORT = process.env.PORT
   app.listen(PORT, () => {
