@@ -10,6 +10,14 @@ GET http://localhost:10001/api/persons/4
 ### delete a person by id
 DELETE http://localhost:10001/api/persons/69170396d6dc9e54c42ff2ad
 
+### update number for a person
+PUT http://localhost:10001/api/persons/691773716f48a8afe248885f
+Content-Type: application/json
+
+{
+  "number": "222222"
+}
+
 ### create a new person
 POST http://localhost:10001/api/persons
 Content-Type: application/json
@@ -18,3 +26,4 @@ Content-Type: application/json
   "name": "King Kong",
   "number": "123456"
 }
+

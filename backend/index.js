@@ -44,10 +44,7 @@ app.get('/info', (req, res, next) => {
   app.get('/api/persons/:id', (req, res) => {
     try {
       const id = req.params.id;
-      if (!id) {
-        winston.warn(`'GET /api/persons/:id' - ID is missing`);
-        return res.status(400).json({ error: 'invalid id' });
-      }
+
       const person = contacts.find((n) => n.id === id);
       if (person) {
         res.json(person);
@@ -66,10 +63,6 @@ app.get('/info', (req, res, next) => {
   
   app.delete('/api/persons/:id', (req, res) => {
       const id = req.params.id;
-      if (!id) {
-        winston.warn(`'DELETE' api/persons/:id - ID is missing`);
-        return res.status(400).json({ error: 'ID missing' });
-      }
       
       Person.findByIdAndDelete(id)
         .then(person => {
@@ -78,12 +71,33 @@ app.get('/info', (req, res, next) => {
         })
         .catch(error => next(error))
   });
+
+  app.put('/api/persons/:id', (req, res, next) => {
+    const id = req.params.id
+    const {number} = req.body
+
+    Person.findById(id)
+      .then(person => {
+        if(!person) {
+          winston.warn(`'PUT api/persons/:id' - person with id${id} not found `)
+          return res.status(404).json({error: `person with id${id} not found`})
+        }
+
+        person.number = number
+
+        return person.save().then(returnedPerson => {
+          winston.info(`'PUT api/persons/:id' - The number has sucessfully changed for ${returnedPerson.name}`)
+          res.status(201).json({returnedPerson: `${returnedPerson}`})
+        })
+      })
+      .catch(error => next(error))
+  })
   
   app.post('/api/persons', (req, res) => {
       const { name, number } = req.body;
 
       if (!name || !number) {
-        winston.warn(`'POST api/persons/' - Missing required fields`);
+        winston.warn(`'POST api/persons' - Missing required fields`);
         return res.status(400).json({ error: 'Missing name or number' });
       }
       
@@ -114,6 +128,7 @@ app.get('/info', (req, res, next) => {
     res.status(404).json({error: 'Unknown endpoint'})
   }
   app.use(unknownEndPoint)
+
 
   const errorHandler = (error, request, response, next) => {
   winston.error(error.message)
