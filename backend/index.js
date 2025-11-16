@@ -41,24 +41,19 @@ app.get('/info', (req, res, next) => {
 });
 
   
-  app.get('/api/persons/:id', (req, res) => {
-    try {
+  app.get('/api/persons/:id', (req, res, next) => {
       const id = req.params.id;
 
-      const person = contacts.find((n) => n.id === id);
-      if (person) {
-        res.json(person);
+      Person.findById(id)
+      .then(person => {
+        if (!person) {
+          winston.info(`'GET api/persons/:id' - person with ID ${id} not found`);
+          return res.status(404).json({error: 'No person found with this ID'})
+        }
         winston.info(`'GET api/persons/:id' - person with ID ${id} found`);
-      } else {
-        winston.warn(`'GET api/person/:id' -  id ${id} is invalid`);
-        res.status(404).end();
-      }
-    } catch (error) {
-      winston.error(
-        `'GET api/persons/:ID' - Failed to fetch data from server, ${error.message}`
-      );
-      res.status(500).end();
-    }
+        res.json(person);
+        })
+        .catch(error => next(error))
   });
   
   app.delete('/api/persons/:id', (req, res) => {
@@ -87,7 +82,7 @@ app.get('/info', (req, res, next) => {
 
         return person.save().then(returnedPerson => {
           winston.info(`'PUT api/persons/:id' - The number has sucessfully changed for ${returnedPerson.name}`)
-          res.status(201).json({returnedPerson: `${returnedPerson}`})
+          res.status(200).json(returnedPerson)
         })
       })
       .catch(error => next(error))
@@ -105,8 +100,7 @@ app.get('/info', (req, res, next) => {
         .then(existingPerson => {
           if (existingPerson) {
             winston.warn(`'POST api/persons/' - name:${name} must be unique`);
-            res.status(400).json({ error: 'name must be unique' });
-            return null
+            return res.status(400).json({ error: 'name must be unique' });
           }
           const person = new Person({
             name: name.trim(),
