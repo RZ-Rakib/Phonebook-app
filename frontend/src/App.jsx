@@ -52,7 +52,7 @@ const App = () => {
             }, 3000);
           })
           .catch(error => {
-            setNotificationMessage({ message: `${newPersonObject.name} is already removed from the server, ${error}`, type: 'error' })
+            setNotificationMessage({ message: `${error.response?.data?.error}`, type: 'error' })
             setTimeout(() => {
               setNotificationMessage({ message: 'null', type: 'null' })
             }, 3000);
@@ -76,7 +76,7 @@ const App = () => {
         }, 3000);
       })
       .catch(error => {
-        setNotificationMessage({ message: `Failed to create ${newPerson.name}`, type: 'error' })
+        setNotificationMessage({ message: `${error.response?.data?.error}`, type: 'error' })
         setTimeout(() => {
           setNotificationMessage({ message: 'null', type: 'null' })
         }, 3000);
@@ -91,23 +91,23 @@ const App = () => {
 
 
   const handleDelete = (person) => {
+    const deletedContact = person.name
     if (window.confirm(`Delete ${person.name} ?`))
       userServices
         .remove(person.id)
         .then(removedObject => {
           setPersons(prev => prev.filter(p => p.id !== person.id))
-          setNotificationMessage({ message: `${removedObject.name} is successfully removed `, type: 'success' })
+          setNotificationMessage({ message: `${deletedContact} is successfully removed `, type: 'success' })
           setTimeout(() => {
             setNotificationMessage({ message: 'null', type: 'null' })
           }, 3000);
         })
-    setPersons(prev => prev.filter(p => p.id !== person.id))
-      .catch(error => {
-        setNotificationMessage({ message: `${person.name} is already removed from the server`, type: 'error' })
-        setTimeout(() => {
-          setNotificationMessage({ message: 'null', type: 'null' })
-        }, 3000);
-      })
+        .catch(error => {
+          setNotificationMessage({ message: `${error.response?.data?.error}`, type: 'error' })
+          setTimeout(() => {
+            setNotificationMessage({ message: 'null', type: 'null' })
+          }, 3000);
+        })
   }
 
   const filteredPersons = persons.filter(p => p.name.toLowerCase().includes(searchName.toLowerCase()))

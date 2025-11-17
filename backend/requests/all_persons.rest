@@ -8,10 +8,10 @@ GET http://localhost:10001/info
 GET http://localhost:10001/api/persons/6917035cd6dc9e54c42ff2aa
 
 ### delete a person by id
-DELETE http://localhost:10001/api/persons/69170396d6dc9e54c42ff2ad
+DELETE http://localhost:10001/api/persons/69170396d6dc9e54c42ff2a
 
 ### update number for a person
-PUT http://localhost:10001/api/persons/691773716f48a8afe248885f
+PUT http://localhost:10001/api/persons/69162994957143bd074cf474
 Content-Type: application/json
 
 {
@@ -23,7 +23,7 @@ POST http://localhost:10001/api/persons
 Content-Type: application/json
 
 {
-  "name": "King Kong",
+  "name": "Ki",
   "number": "123456"
 }
 
