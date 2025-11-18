@@ -6,12 +6,12 @@ const url = process.env.MONGODB_URI
 
 mongoose.set('strictQuery', false)
 
-mongoose.connect(url, {family: 4})
-  .then(result => {
-    winston.info('Connected to MongoDB');
+mongoose.connect(url, { family: 4 })
+  .then(() => {
+    winston.info('Connected to MongoDB')
   })
   .catch(error => {
-    winston.error(`Error connecting to MongoDB', ${error.message}`);
+    winston.error(`Error connecting to MongoDB', ${error.message}`)
   })
 
 const personSchema = new mongoose.Schema({
@@ -23,12 +23,12 @@ const personSchema = new mongoose.Schema({
   number: {
     type: String,
     required: [true, 'number is required'],
-    validate: { 
+    validate: {
       validator: function(v) {
         if(v.length < 8) {
           return false
         }
-        
+
         return /^\d{2,3}-\d+$/.test(v)
       },
       message: props => `${props.value} is not a valid phone number`
